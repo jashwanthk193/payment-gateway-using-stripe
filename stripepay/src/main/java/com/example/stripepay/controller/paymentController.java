@@ -17,6 +17,25 @@ import org.springframework.web.bind.annotation.RestController;
 public class paymentController {
     @Value("${stripe.api.key}")
     private String stripeApiKey;
+    @PostMapping("/create-payment-intent")
+    public String createPaymentIntent(@RequestParam Integer amount) {
+        Stripe.apiKey=stripeApiKey;
+        try {
+            PaymentIntent intent = PaymentIntent.create(
+                    new PaymentIntentCreateParams.Builder()
+                            .setCurrency("usd")
+                            .setAmount((long)amount+100)
+                            .build());
+
+            return generateResponse( intent.getClientSecret());
+        } catch (StripeException e) {
+
+            return generateResponse("Payment failed: " + e.getMessage());
+        }
+    }
+    private String generateResponse(String clientSecret){
+        return "{\"clientSecret\":\""+clientSecret + "\"}";
+    }
 
 }
 
